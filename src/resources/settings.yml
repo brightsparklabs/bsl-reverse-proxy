@@ -1,19 +1,16 @@
 ---
 ##
- # The BSL Forward Proxy configuration file.
+ # The BSL Reverse Proxy configuration file.
  # _____________________________________________________________________________
  #
  # Created by brightSPARK Labs
  # www.brightsparklabs.com
  ##
 
-bsl_forward_proxy:
+reverse_proxy:
   # Settings pertaining to the services.
   services:
     proxy:
-      # Domain of the proxy which all services will be nested under.
-      domain: brightsparklabs.local
-
       # Whether to use the Acme Staging CA for certificates.
       enable_staging_ca: false
 
@@ -31,17 +28,23 @@ bsl_forward_proxy:
         # AWS access key with permissions to manipulate Route53 records for DNS challenge.
         secret_access_key: CHANGE ME
 
-      storage:
-        # Uncomment to use filesystem (comment out the s3 type below).
-        type: filesystem
+  # Settings pertaining to the forwarded networks and routes.
+  routing:
+    # List of known docker networks to route to.
+    # This maps to the docker compose network `<project>_<network | "default">`.
+    # Does NOT need to include the network for this project.
+    networks: []
+    # - network: default  # Network name [Optional] (see `com.docker.compose.network` label).
+    #   project: stack-a  # Project name (see `com.docker.compose.project` label).
+    #   aliases:
+    #   - "actual-domain.example.com" # Aliases. Same as `docker network create --alias $`
 
-        # NOTE: The names `accesskey` and `secretkey` are inline with docker Registry schema.
-        # Uncomment to use s3 (comment out the filesystem type above).
-        #type: s3
-        #accesskey: CHANGE ME
-        #secretkey: CHANGE ME
-        #bucket: bsl.internal.bslnet.production.aws.s3.docker-registry-images
-        #region: ap-southeast-2
+    # List of services to route to.
+    routes: []
+      # # The endpoint exposed externally by the reverse proxy to access the service.
+      # - external_endpoint: https://example.com/hello/there
+      #   # The endpoint used internally (by the container network) to access the service.
+      #   internal_endpoint: http://example-service:3422
 
   # Settings pertaining to debugging the platform.
   debug:

@@ -6,13 +6,13 @@
  # www.brightsparklabs.com
  ##
 
-FROM brightsparklabs/appcli:3.0.0
+FROM brightsparklabs/appcli:3.1.0
 
-ENTRYPOINT ["./bsl-forward-proxy.py"]
+ENTRYPOINT ["./reverse-proxy.py"]
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --requirement requirements.txt
+RUN pip install --no-cache-dir --requirement requirements.txt
 COPY src .
 
 # TODO: uncomment if using a local appcli during dev
@@ -24,11 +24,11 @@ ARG APP_VERSION=latest
 ARG BUILD_DATE
 ARG VCS_REF
 LABEL maintainer="enquire@brightsparklabs.com" \
-      org.label-schema.name="team-bsl" \
-      org.label-schema.description="Image used to run the BSL Forward Proxy CLI" \
+      org.label-schema.name="reverse-proxy" \
+      org.label-schema.description="Image used to run the BSL Reverse Proxy CLI" \
       org.label-schema.vendor="brightSPARK Labs" \
       org.label-schema.schema-version="1.0.0-rc1" \
-      org.label-schema.vcs-url="https://github.com/brightsparklabs/bsl-forward-proxy" \
+      org.label-schema.vcs-url="https://github.com/brightsparklabs/bsl-reverse-proxy" \
       org.label-schema.vcs-ref=${VCS_REF} \
       org.label-schema.build-date=${BUILD_DATE} \
       org.label-schema.version=${APP_VERSION}

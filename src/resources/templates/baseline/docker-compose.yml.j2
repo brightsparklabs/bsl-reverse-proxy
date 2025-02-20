@@ -1,6 +1,6 @@
 ---
 ##
- # Docker Compose file for running BSL Forward Proxy.
+ # Docker Compose file for running BSL Reverse Proxy.
  # ____________________________________________________________________________
  #
  # Created by brightSPARK Labs
@@ -13,34 +13,30 @@ services:
   # --------------------------------------------------------------------------
 
   proxy:
-    # Would prefer to use caddy direct, but need the route53 DNS module.
-    image: ghcr.io/williamjacksn/caddy-route53
+    image: caddy:2.8
     restart: always
-    logging: &logging
-      options:
-        max-size: '10m'
-        max-file: '5'
     volumes:
-      - ${TEAM_BSL_GENERATED_CONFIG_DIR:?}/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ${TEAM_BSL_DATA_DIR:?}/proxy/:/data/
+      - ${REVERSE_PROXY_GENERATED_CONFIG_DIR:?}/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${REVERSE_PROXY_DATA_DIR:?}/proxy/:/data/
     ports:
       - 80:80
       - 443:443
+    networks:
+      proxy_network:
+    {% for network in settings.reverse_proxy.routing.networks %}
+      {{ network.project }}_{{ network.network | default('default') }}:
+        {% if network.aliases %}
+        aliases:
+        {% for alias in network.aliases %}
+        - {{ alias }}
+        {% endfor %}
+        {% endif %}
+    {% endfor %}
 
-  # --------------------------------------------------------------------------
-  # APPLICATIONS
-  # --------------------------------------------------------------------------
-
-  landing-page:
-    image: b4bz/homer
-    restart: always
-    logging: *logging
-    environment:
-      - SUBFOLDER=/landing-page
-    volumes:
-      - ${TEAM_BSL_GENERATED_CONFIG_DIR:?}/landing-page/config.yml:/www/assets/config.yml:ro
-
-  whoami:
-    image: emilevauge/whoami
-    restart: always
-    logging: *logging
+networks:
+  proxy_network:
+    driver: bridge
+  {% for network in settings.reverse_proxy.routing.networks %}
+  {{ network.project }}_{{ network.network | default('default') }}:
+    external: true
+  {% endfor %}

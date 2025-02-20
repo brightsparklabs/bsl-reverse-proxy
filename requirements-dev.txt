@@ -8,9 +8,9 @@
  # www.brightsparklabs.com
  ##
 
-pytest
-ruff==0.4.1
-rope
+pre-commit==4.1.0
+pytest==8.3.4
+ruff==0.9.7
 
 # ------------------------------------------------------------------------------
 # ONLY UNCOMMENT WHEN DEVELOPING

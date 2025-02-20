@@ -2,71 +2,31 @@
 	email admin@brightsparklabs.com
 
 	log {
-		level {{ settings.team_bsl.debug.proxy.log_level|lower }}
+		level {{ settings.reverse_proxy.debug.proxy.log_level|lower }}
 	}
 
-	{% if settings.team_bsl.services.proxy.enable_staging_ca %}
+	{% if settings.reverse_proxy.services.proxy.enable_staging_ca %}
 	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
-	{% endif %}{# settings.team_bsl.services.proxy.enable_staging_ca #}
+	{% endif %}{# settings.reverse_proxy.services.proxy.enable_staging_ca #}
 
-	{% if settings.team_bsl.services.proxy.enable_internal_tls %}
+	{% if settings.reverse_proxy.services.proxy.enable_internal_tls %}
 	local_certs
-	{% endif %}{# settings.team_bsl.services.proxy.enable_internal_tls #}
+	{% endif %}{# settings.reverse_proxy.services.proxy.enable_internal_tls #}
 
-	{% if settings.team_bsl.services.proxy.acme_dns_challenge.enable %}
+	{% if settings.reverse_proxy.services.proxy.acme_dns_challenge.enable %}
 	acme_dns route53 {
-		access_key_id "{{ settings.team_bsl.services.proxy.acme_dns_challenge.access_key_id }}"
-		secret_access_key "{{ settings.team_bsl.services.proxy.acme_dns_challenge.secret_access_key }}"
+		access_key_id "{{ settings.reverse_proxy.services.proxy.acme_dns_challenge.access_key_id }}"
+		secret_access_key "{{ settings.reverse_proxy.services.proxy.acme_dns_challenge.secret_access_key }}"
 	}
-	{% endif %}{# settings.team_bsl.services.proxy.enable_acme_dns_challenge #}
+	{% endif %}{# settings.reverse_proxy.services.proxy.enable_acme_dns_challenge #}
+
 }
 
-https://bslnet.{{ settings.team_bsl.services.proxy.domain }} {
-	# Default to landing page.
-	redir / /landing-page/
-	reverse_proxy /landing-page/* http://landing-page:8080
 
-	redir /plummet /plummet/index.html
-	reverse_proxy /plummet/* http://plummet
+{% for route in settings.reverse_proxy.routing.routes %}
 
-	redir /whoami /whoami/
-	reverse_proxy /whoami/* http://whoami {
-		header_up Host {host}
-		header_up X-Real-IP {remote_host}
-	}
+{{ route.external_endpoint }} {
+    reverse_proxy {{ route.internal_endpoint }}
 }
 
-https://docker.{{ settings.team_bsl.services.proxy.domain }} {
-	reverse_proxy http://docker-registry:5000
-}
-
-https://docker-registry-ui.bslnet.{{ settings.team_bsl.services.proxy.domain }} {
-	reverse_proxy http://docker-registry-ui
-}
-
-https://artifactory.bslnet.{{ settings.team_bsl.services.proxy.domain }} {
-	# Handle proxying to Palantir External Artifactory.
-	handle_path /artifactory/external-palantir/* {
-		# NOTE: Currently only using `all-jar` but this could be made more flexible.
-		rewrite * /artifactory/all-jar{uri}
-		reverse_proxy {
-				to {{ settings.team_bsl.services.proxy.palantir.artifactory.uri }}
-				# Ensure Palantir servers see the Palantir URI in the request.
-				header_up Host {upstream_hostport}
-
-				# Palantir artifactory requires basic auth.
-				header_up Authorization "Basic {{ settings.team_bsl.services.proxy.palantir.artifactory.basic_auth }}"
-
-				# Do not send across the BSL proxy server details.
-				header_up -X-Forwarded-For
-				header_up -X-Forwarded-Proto
-				header_up -X-Forwarded-Host
-		}
-	}
-
-	# Default to UI.
-	redir / /ui/
-
-	reverse_proxy /ui/* http://artifactory:8082
-	reverse_proxy /artifactory/* http://artifactory:8081
-}
+{% endfor %}
