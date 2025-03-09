@@ -33,7 +33,7 @@ filter {
 output {
   if ("proxy-traffic-logs" in [tags]) {
     elasticsearch {
-      hosts => "{{ settings.reverse_proxy.services.monitoring.elasticsearch_url | default("elasticsearch:9200") }}"
+      hosts => ["{{ settings.reverse_proxy.services.monitoring.elasticsearch_host | default("elasticsearch:9200") }}"]
       index => "proxy-traffic-logs"
     }
   }

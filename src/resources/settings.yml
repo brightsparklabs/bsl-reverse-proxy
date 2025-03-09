@@ -34,8 +34,8 @@ reverse_proxy:
       # This takes the `caddy` logs and exports them to a elasticsearch server.
       enabled: true
 
-      # Elasticsearch server URL.
-      elasticsearch_url: "elasticsearch:9200"
+      # The Elasticsearch API endpoint to send logs to (defaults to `elasticsearch:9200`).
+      elasticsearch_host: "elasticsearch:9200"
 
   # Settings pertaining to the forwarded networks and routes.
   routing:

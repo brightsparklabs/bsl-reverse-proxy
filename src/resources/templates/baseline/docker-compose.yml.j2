@@ -37,13 +37,15 @@ services:
   filebeat:
     image: elastic/filebeat:8.16.3
     restart: always
+    # Containers write their log files out as all different users,
+    # so we need to run the log collector as `root`.
     user: root
     volumes:
       # Config file.
       # Mount the specific file so we do not remove other files with the volume mount.
       - ${REVERSE_PROXY_GENERATED_CONFIG_DIR:?}/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       # Data.
-      - filebeatVolume1:/var/lib/filebeat
+      - ${REVERSE_PROXY_DATA_DIR:?}/filebeat/data:/var/lib/filebeat
       # Log directories.
       - ${REVERSE_PROXY_DATA_DIR:?}/proxy/logs:/mnt/data/log/proxy
     depends_on: [logstash]
@@ -72,14 +74,3 @@ networks:
   {{ network.project }}_{{ network.network | default('default') }}:
     external: true
   {% endfor %}{# settings.reverse_proxy.routing.networks #}
-
-
-# --------------------------------------------------------------------------
-# VOLUMES
-# --------------------------------------------------------------------------
-
-{% if settings.reverse_proxy.services.monitoring.enabled  %}
-volumes:
-    filebeatVolume1:
-        driver: local
-{% endif %}{# settings.reverse_proxy.services.monitoring.enabled #}
