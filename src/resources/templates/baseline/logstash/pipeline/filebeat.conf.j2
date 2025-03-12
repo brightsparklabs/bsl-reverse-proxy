@@ -1,0 +1,40 @@
+# Input.
+input {
+  beats {
+    port => 5044
+    host => "0.0.0.0"
+  }
+}
+
+# Filter(s).
+filter {
+  if ("proxy-traffic-logs" in [tags]) {
+
+    json {
+      source => "message"
+    }
+
+    date {
+      match => ["ts", "UNIX"]
+      target => "@timestamp"
+    }
+
+    # The `tls` field can be either an `object` or `bool`.
+    # Elasticsearch does not support multiple types for indexes.
+    # Easier to just drop.
+    mutate {
+      remove_field => ["ts", "tls"]
+    }
+
+  }
+}
+
+# Output.
+output {
+  if ("proxy-traffic-logs" in [tags]) {
+    elasticsearch {
+      hosts => ["{{ settings.reverse_proxy.services.monitoring.elasticsearch_host | default("elasticsearch:9200") }}"]
+      index => "proxy-traffic-logs"
+    }
+  }
+}

@@ -38,6 +38,7 @@ NETWORKS_SETTING = "reverse_proxy.routing.networks"
 # HOOKS
 # ------------------------------------------------------------------------------
 
+
 def get_hooks() -> Hooks:
     """Create and return the hooks."""
 
@@ -47,24 +48,26 @@ def get_hooks() -> Hooks:
         cli_context: CliContext = ctx.obj
         variables_manager: VariablesManager = cli_context.get_variables_manager()
         # NOTE: This is a `list[dict]` but the `appcli` method signature return is `dict` so we ignore.
-        networks: list[dict] = variables_manager.get_variable(NETWORKS_SETTING) # type: ignore
+        networks: list[dict] = variables_manager.get_variable(NETWORKS_SETTING)  # type: ignore
 
         # Create the networks (if required).
         client = docker.from_env()
         for network_config in networks:
-
             # Define some variables for the names.
-            network = network_config.get('network', "default")
-            project = network_config.get('project')
+            network = network_config.get("network", "default")
+            project = network_config.get("project")
             name = f"{project}_{network}"
 
             # Query docker to see if the network name exists.
             if not client.networks.list(names=[name]):
                 logger.info(f"External network `{name}` does not exist. Creating.")
-                client.networks.create(name=name, labels={
-                    "com.docker.compose.network": network,
-                    "com.docker.compose.project": project,
-                })
+                client.networks.create(
+                    name=name,
+                    labels={
+                        "com.docker.compose.network": network,
+                        "com.docker.compose.project": project,
+                    },
+                )
 
     return Hooks(pre_start=pre_start)
 
@@ -72,6 +75,7 @@ def get_hooks() -> Hooks:
 # ------------------------------------------------------------------------------
 # ENTRYPOINT
 # ------------------------------------------------------------------------------
+
 
 def main():
     configuration = Configuration(
@@ -81,6 +85,7 @@ def main():
     )
     cli = create_cli(configuration)
     cli()
+
 
 if __name__ == "__main__":
     main()

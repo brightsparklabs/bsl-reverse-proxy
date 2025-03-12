@@ -9,7 +9,7 @@
 
 services:
   # --------------------------------------------------------------------------
-  # INFRASTRUCTURE
+  # SERVICES
   # --------------------------------------------------------------------------
 
   proxy:
@@ -17,11 +17,11 @@ services:
     restart: always
     volumes:
       - ${REVERSE_PROXY_GENERATED_CONFIG_DIR:?}/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ${REVERSE_PROXY_DATA_DIR:?}/proxy/:/data/
+      - ${REVERSE_PROXY_DATA_DIR:?}/proxy/logs:/var/log/caddy
     ports:
       - 80:80
       - 443:443
-    networks:
+    networks: &network_settings
       proxy_network:
     {% for network in settings.reverse_proxy.routing.networks %}
       {{ network.project }}_{{ network.network | default('default') }}:
@@ -29,9 +29,43 @@ services:
         aliases:
         {% for alias in network.aliases %}
         - {{ alias }}
-        {% endfor %}
-        {% endif %}
-    {% endfor %}
+        {% endfor %}{# network.aliases #}
+        {% endif %}{# network.aliases #}
+    {% endfor %}{# settings.reverse_proxy.routing.networks #}
+
+  {% if settings.reverse_proxy.services.monitoring.enabled %}
+  filebeat:
+    image: elastic/filebeat:8.16.3
+    restart: always
+    # Containers write their log files out as all different users,
+    # so we need to run the log collector as `root`.
+    user: root
+    volumes:
+      # Config file.
+      # Mount the specific file so we do not remove other files with the volume mount.
+      - ${REVERSE_PROXY_GENERATED_CONFIG_DIR:?}/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      # Data.
+      - ${REVERSE_PROXY_DATA_DIR:?}/filebeat/data:/var/lib/filebeat
+      # Log directories.
+      - ${REVERSE_PROXY_DATA_DIR:?}/proxy/logs:/mnt/data/log/proxy
+    depends_on: [logstash]
+    networks: *network_settings
+
+  logstash:
+    image: logstash:8.17.1
+    restart: always
+    volumes:
+      # Mount the specific file so we do not remove other files with the volume mount.
+      - ${REVERSE_PROXY_GENERATED_CONFIG_DIR:?}/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      # Mount the whole 'pipeline' directory as we only want our pipelines and none of the defaults.
+      - ${REVERSE_PROXY_GENERATED_CONFIG_DIR:?}/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    networks: *network_settings
+  {% endif %}{# settings.reverse_proxy.services.monitoring.enabled #}
+
+
+# --------------------------------------------------------------------------
+# NETWORKING
+# --------------------------------------------------------------------------
 
 networks:
   proxy_network:
@@ -39,4 +73,4 @@ networks:
   {% for network in settings.reverse_proxy.routing.networks %}
   {{ network.project }}_{{ network.network | default('default') }}:
     external: true
-  {% endfor %}
+  {% endfor %}{# settings.reverse_proxy.routing.networks #}

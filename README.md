@@ -48,28 +48,3 @@ It provides the following benefits:
 See [appcli](https://github.com/brightsparklabs/appcli) for information on basic `appcli` setup.
 
 The projects can be configured in the `settings.yml` file.
-
-```yaml
-reverse_proxy:
-  # Settings pertaining to the services.
-  services:
-    proxy:
-      # Whether to use the Acme Staging CA for certificates.
-      enable_staging_ca: false
-
-      # Whether to use internal Caddy certificates rather than Acme ones (useful for testing).
-      enable_internal_tls: true
-
-  # Settings pertaining to the forwarded networks and routes.
-  routing:
-    # List of known docker networks to route to. Does not need to include the network for this project.
-    # - name: internal-docker-network  <- Internal docker network.
-    #   aliases:
-    #   - "actual-domain.example.com"  <- Aliases. Same as `docker network create --alias $`
-    networks: []
-
-    # List of services to route to.
-    # - dns_record: kibana.myproject.local        <- External record.
-    #   endpoint: kibana-montitoring-network:5601 <- Internal service.
-    routes: []
-```

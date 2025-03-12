@@ -20,13 +20,22 @@ reverse_proxy:
       # Settings pertaining to the ACME DNS challenge type.
       acme_dns_challenge:
         # Whether to use ACME DNS challenge (rather than HTTP challenge) to acquire certificates.
-        enable: true
+        enable: false
 
         # AWS access key with permissions to manipulate Route53 records for DNS challenge.
         access_key_id: CHANGE ME
 
         # AWS access key with permissions to manipulate Route53 records for DNS challenge.
         secret_access_key: CHANGE ME
+
+    # Settings pertaining to monitoring.
+    monitoring:
+      # Whether to enable the montoring stack.
+      # This takes the `caddy` logs and exports them to a elasticsearch server.
+      enabled: true
+
+      # The Elasticsearch API endpoint to send logs to (defaults to `elasticsearch:9200`).
+      elasticsearch_host: "elasticsearch:9200"
 
   # Settings pertaining to the forwarded networks and routes.
   routing:

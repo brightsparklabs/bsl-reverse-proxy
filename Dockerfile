@@ -6,7 +6,7 @@
  # www.brightsparklabs.com
  ##
 
-FROM brightsparklabs/appcli:3.2.0
+FROM brightsparklabs/appcli-docker-compose:3.2.0
 
 ENTRYPOINT ["./reverse-proxy.py"]
 WORKDIR /app
