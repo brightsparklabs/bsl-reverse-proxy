@@ -8,7 +8,7 @@
  # www.brightsparklabs.com
  ##
 
-pre-commit==4.1.0
+pre-commit==4.2.0
 pytest==8.3.5
 ruff==0.11.0
 
