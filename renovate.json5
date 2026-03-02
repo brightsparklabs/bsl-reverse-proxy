@@ -1,0 +1,31 @@
+{
+    enabled: true,
+    extends: [
+        'config:recommended',
+    ],
+    timezone: 'Australia/Sydney',
+    prHourlyLimit: 25,
+    prConcurrentLimit: 25,
+    packageRules: [
+        {
+            groupName: 'All Minor and Patch Updates',
+            matchUpdateTypes: [
+                'minor',
+                'patch',
+                'pin',
+                'digest',
+            ],
+            automerge: true,
+            automergeType: 'branch',
+            prCreation: 'status-success',
+        },
+        {
+            groupName: 'Major Updates',
+            matchUpdateTypes: [
+                'major',
+            ],
+            automerge: false,
+            prCreation: 'status-success',
+        },
+    ],
+}

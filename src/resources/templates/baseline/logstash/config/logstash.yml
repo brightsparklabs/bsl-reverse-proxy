@@ -1,0 +1,15 @@
+---
+# The bind address for the metrics REST endpoint.
+http.host: 127.0.0.1
+#   The bind port for the metrics REST endpoint.
+http.port: 9600
+
+# At present and for the near future, we have no need for xpack's features, so we will leave these
+# settings disabled.
+#xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+
+## X-Pack security credentials
+#
+#xpack.monitoring.enabled: true
+#xpack.monitoring.elasticsearch.username: elastic
+#xpack.monitoring.elasticsearch.password: changeme
